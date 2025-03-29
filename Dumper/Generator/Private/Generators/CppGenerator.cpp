@@ -14,7 +14,7 @@ constexpr std::string GetTypeFromSize(uint8 Size)
 	switch (Size)
 	{
 	case 1:
-		return "uint8";
+		return "uint8_t";
 	case 2:
 		return "uint16";
 	case 4:
@@ -55,7 +55,7 @@ std::string CppGenerator::MakeMemberStringWithoutName(const std::string& Type)
 
 std::string CppGenerator::GenerateBytePadding(const int32 Offset, const int32 PadSize, std::string&& Reason)
 {
-	return MakeMemberString("uint8", std::format("Pad_{:X}[0x{:X}]", Offset, PadSize), std::format("0x{:04X}(0x{:04X})({})", Offset, PadSize, std::move(Reason)));
+	return MakeMemberString("uint8_t", std::format("Pad_{:X}[0x{:X}]", Offset, PadSize), std::format("0x{:04X}(0x{:04X})({})", Offset, PadSize, std::move(Reason)));
 }
 
 std::string CppGenerator::GenerateBitPadding(uint8 UnderlayingSizeBytes, const uint8 PrevBitPropertyEndBit, const int32 Offset, const int32 PadSize, std::string&& Reason)
@@ -807,7 +807,7 @@ std::string CppGenerator::GetEnumPrefixedName(const EnumWrapper& Enum)
 std::string CppGenerator::GetEnumUnderlayingType(const EnumWrapper& Enum)
 {
 	static constexpr std::array<const char*, 8> UnderlayingTypesBySize = {
-		"uint8",
+		"uint8_t",
 		"uint16",
 		"InvalidEnumSize",
 		"uint32",
@@ -817,7 +817,7 @@ std::string CppGenerator::GetEnumUnderlayingType(const EnumWrapper& Enum)
 		"uint64"
 	};
 
-	return Enum.GetUnderlyingTypeSize() <= 0x8 ? UnderlayingTypesBySize[static_cast<size_t>(Enum.GetUnderlyingTypeSize()) - 1] : "uint8";
+	return Enum.GetUnderlyingTypeSize() <= 0x8 ? UnderlayingTypesBySize[static_cast<size_t>(Enum.GetUnderlyingTypeSize()) - 1] : "uint8_t";
 }
 
 std::string CppGenerator::GetCycleFixupType(const StructWrapper& Struct, bool bIsForInheritance)
@@ -893,7 +893,7 @@ std::string CppGenerator::GetMemberTypeStringWithoutConst(UEProperty Member, int
 		if (UEEnum Enum = Member.Cast<UEByteProperty>().GetEnum())
 			return GetEnumPrefixedName(Enum);
 
-		return "uint8";
+		return "uint8_t";
 	}
 	else if (Flags & EClassCastFlags::UInt16Property)
 	{
@@ -952,7 +952,7 @@ std::string CppGenerator::GetMemberTypeStringWithoutConst(UEProperty Member, int
 	}
 	else if (Flags & EClassCastFlags::BoolProperty)
 	{
-		return Member.Cast<UEBoolProperty>().IsNativeBool() ? "bool" : "uint8";
+		return Member.Cast<UEBoolProperty>().IsNativeBool() ? "bool" : "uint8_t";
 	}
 	else if (Flags & EClassCastFlags::StructProperty)
 	{
@@ -1150,7 +1150,7 @@ void CppGenerator::GeneratePropertyFixupFile(StreamType& PropertyFixup)
 
 	for (const auto& [Name, Property] : UnknownProperties)
 	{
-		PropertyFixup << std::format("\nclass alignas(0x{:02X}) {}\n{{\n\tunsigned __int8 Pad[0x{:X}];\n}};\n",Property.GetAlignment(), Name, Property.GetSize());
+		PropertyFixup << std::format("\nclass alignas(0x{:02X}) {}\n{{\n\tunsigned char Pad[0x{:X}];\n}};\n",Property.GetAlignment(), Name, Property.GetSize());
 	}
 
 	WriteFileEnd(PropertyFixup, EFileType::PropertyFixup);
@@ -1828,22 +1828,22 @@ void CppGenerator::InitPredefinedMembers()
 	{
 		PredefinedMember {
 			.Comment = "NOT AUTO-GENERATED PROPERTY",
-			.Type = "uint8", .Name = "FieldSize", .Offset = Off::BoolProperty::Base, .Size = 0x01, .ArrayDim = 0x1, .Alignment = 0x1,
+			.Type = "uint8_t", .Name = "FieldSize", .Offset = Off::BoolProperty::Base, .Size = 0x01, .ArrayDim = 0x1, .Alignment = 0x1,
 			.bIsStatic = false, .bIsZeroSizeMember = false, .bIsBitField = false, .BitIndex = 0xFF
 		},
 		PredefinedMember {
 			.Comment = "NOT AUTO-GENERATED PROPERTY",
-			.Type = "uint8", .Name = "ByteOffset", .Offset = Off::BoolProperty::Base + 0x1, .Size = 0x01, .ArrayDim = 0x1, .Alignment = 0x1,
+			.Type = "uint8_t", .Name = "ByteOffset", .Offset = Off::BoolProperty::Base + 0x1, .Size = 0x01, .ArrayDim = 0x1, .Alignment = 0x1,
 			.bIsStatic = false, .bIsZeroSizeMember = false,  .bIsBitField = false, .BitIndex = 0xFF
 		},
 		PredefinedMember {
 			.Comment = "NOT AUTO-GENERATED PROPERTY",
-			.Type = "uint8", .Name = "ByteMask", .Offset = Off::BoolProperty::Base + 0x2, .Size = 0x01, .ArrayDim = 0x1, .Alignment = 0x1,
+			.Type = "uint8_t", .Name = "ByteMask", .Offset = Off::BoolProperty::Base + 0x2, .Size = 0x01, .ArrayDim = 0x1, .Alignment = 0x1,
 			.bIsStatic = false, .bIsZeroSizeMember = false, .bIsBitField = false, .BitIndex = 0xFF
 		},
 		PredefinedMember {
 			.Comment = "NOT AUTO-GENERATED PROPERTY",
-			.Type = "uint8", .Name = "FieldMask", .Offset = Off::BoolProperty::Base + 0x3, .Size = 0x01, .ArrayDim = 0x1, .Alignment = 0x1,
+			.Type = "uint8_t", .Name = "FieldMask", .Offset = Off::BoolProperty::Base + 0x3, .Size = 0x01, .ArrayDim = 0x1, .Alignment = 0x1,
 			.bIsStatic = false, .bIsZeroSizeMember = false, .bIsBitField = false, .BitIndex = 0xFF
 		},
 	};
@@ -2953,8 +2953,10 @@ namespace InSDKUtils
 
 
 	/* Custom 'GetImageBase' function */
-	BasicHpp << "\tuintptr_t GetImageBase();\n\n";
-
+	BasicHpp << R"(\t inline uintptr_t GetImageBase() 
+	{ 
+        return reinterpret_cast<uintptr_t>(GetModuleHandle(0)); 
+    }\n\n)";
 
 	/* GetVirtualFunction(const void* ObjectInstance, int32 Index) function */
 	BasicHpp << R"(	template<typename FuncType>
@@ -2973,8 +2975,8 @@ namespace InSDKUtils
 	// End Namespace 'InSDKUtils'
 
 	/* Custom 'GetImageBase' function */
-	BasicCpp << std::format(R"(uintptr_t InSDKUtils::GetImageBase()
-{})", Settings::CppGenerator::GetImageBaseFuncBody);
+//	BasicCpp << std::format(R"(uintptr_t InSDKUtils::GetImageBase()
+//{})", Settings::CppGenerator::GetImageBaseFuncBody);
 
 	if constexpr (!Settings::CppGenerator::XORString)
 	{
@@ -3606,12 +3608,12 @@ R"({
 		{
 			PredefinedMember {
 				.Comment = "NOT AUTO-GENERATED PROPERTY",
-				.Type = "uint8", .Name = "Id", .Offset = FNumberedDataInitialOffset, .Size = 0x01, .ArrayDim = 0x4, .Alignment = 0x1,
+				.Type = "uint8_t", .Name = "Id", .Offset = FNumberedDataInitialOffset, .Size = 0x01, .ArrayDim = 0x4, .Alignment = 0x1,
 				.bIsStatic = false, .bIsZeroSizeMember = false, .bIsBitField = false, .BitIndex = 0x0, .BitCount = 1
 			},
 			PredefinedMember{
 				.Comment = "NOT AUTO-GENERATED PROPERTY",
-				.Type = "uint8", .Name = "Number", .Offset = FNumberedDataInitialOffset + 0x4, .Size = 0x01, .ArrayDim = 0x4, .Alignment = 0x1,
+				.Type = "uint8_t", .Name = "Number", .Offset = FNumberedDataInitialOffset + 0x4, .Size = 0x01, .ArrayDim = 0x4, .Alignment = 0x1,
 				.bIsStatic = false, .bIsZeroSizeMember = false, .bIsBitField = false, .BitIndex = 0xFF
 			}
 		};
@@ -4551,7 +4553,7 @@ private:
 	{
 		static_assert(TypeSize > 0x0, "TOptional can not store an empty type!");
 
-		uint8 Value[TypeSize];
+		uint8_t Value[TypeSize];
 		bool bIsSet;
 	};
 
@@ -5027,7 +5029,7 @@ template<typename UnderlayingStructType, int32 Size, int32 Align>
 struct alignas(Align) TCylicStructFixup
 {
 private:
-	uint8 Pad[Size];
+	uint8_t Pad[Size];
 
 public:
 	      UnderlayingStructType& GetTyped()       { return reinterpret_cast<      UnderlayingStructType&>(*this); }
@@ -5042,7 +5044,7 @@ template<typename UnderlayingClassType, int32 Size, int32 Align = 0x8, class Bas
 struct alignas(Align) TCyclicClassFixup : public BaseClassType
 {
 private:
-	uint8 Pad[Size];
+	uint8_t Pad[Size];
 
 public:
 	UnderlayingClassType*       GetTyped()       { return reinterpret_cast<      UnderlayingClassType*>(this); }
@@ -5156,7 +5158,7 @@ namespace UC
 		template<int32 Size, uint32 Alignment>
 		struct TAlignedBytes
 		{
-			alignas(Alignment) uint8 Pad[Size];
+			alignas(Alignment) uint8_t Pad[Size];
 		};
 
 		template<uint32 NumInlineElements>

@@ -53,6 +53,9 @@ private:
     static bool SetupFolders(std::string& FolderName, fs::path& OutFolder);
     static bool SetupFolders(std::string& FolderName, fs::path& OutFolder, std::string& SubfolderName, fs::path& OutSubFolder);
 
+private:
+    static void GeneratePlaceholderFile(const fs::path& Path);
+
 public:
     template<GeneratorImplementation GeneratorType>
     static void Generate() 
@@ -61,6 +64,8 @@ public:
         {
             if (!SetupDumperFolder())
                 return;
+
+            GeneratePlaceholderFile(DumperFolder);
 
             if (!bDumpedGObjects)
             {

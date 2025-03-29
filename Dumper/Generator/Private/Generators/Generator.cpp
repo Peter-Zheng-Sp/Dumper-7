@@ -1,4 +1,4 @@
-
+#include <fstream>
 #include "Generators/Generator.h"
 #include "Managers/StructManager.h"
 #include "Managers/EnumManager.h"
@@ -183,4 +183,10 @@ bool Generator::SetupFolders(std::string& FolderName, fs::path& OutFolder, std::
 	}
 
 	return true;
+}
+
+void Generator::GeneratePlaceholderFile(const fs::path& Path)
+{
+	std::ofstream PlaceHolderStream(Path / "placeholder");
+	PlaceHolderStream.close();
 }
