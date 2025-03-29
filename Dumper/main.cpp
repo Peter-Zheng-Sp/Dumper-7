@@ -58,9 +58,9 @@ DWORD MainThread(HMODULE Module)
 	std::cout << "GameVersion: " << Settings::Generator::GameVersion << "\n\n";
 
 	Generator::Generate<CppGenerator>();
-	Generator::Generate<MappingGenerator>();
-	Generator::Generate<IDAMappingGenerator>();
-	Generator::Generate<DumpspaceGenerator>();
+	//Generator::Generate<MappingGenerator>();
+	//Generator::Generate<IDAMappingGenerator>();
+	//Generator::Generate<DumpspaceGenerator>();
 
 
 	auto t_C = std::chrono::high_resolution_clock::now();

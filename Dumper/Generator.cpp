@@ -1,3 +1,4 @@
+#include <fstream>
 #include "Generator.h"
 #include "HashStringTable.h"
 #include "StructManager.h"
@@ -181,4 +182,10 @@ bool Generator::SetupFolders(std::string& FolderName, fs::path& OutFolder, std::
 	}
 
 	return true;
+}
+
+void Generator::GeneratePlaceholderFile(const fs::path& Path)
+{
+	std::ofstream PlaceHolderStream(Path / "placeholder");
+	PlaceHolderStream.close();
 }

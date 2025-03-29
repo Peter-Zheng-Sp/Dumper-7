@@ -28,7 +28,7 @@ std::string DumpspaceGenerator::GetEnumPrefixedName(const EnumWrapper& Enum)
 std::string DumpspaceGenerator::EnumSizeToType(const int32 Size)
 {
 	static constexpr std::array<const char*, 8> UnderlayingTypesBySize = {
-		"uint8",
+		"uint8_t",
 		"uint16",
 		"InvalidEnumSize",
 		"uint32",
@@ -38,7 +38,7 @@ std::string DumpspaceGenerator::EnumSizeToType(const int32 Size)
 		"uint64"
 	};
 
-	return Size <= 0x8 ? UnderlayingTypesBySize[static_cast<size_t>(Size) - 1] : "uint8";
+	return Size <= 0x8 ? UnderlayingTypesBySize[static_cast<size_t>(Size) - 1] : "uint8_t";
 }
 
 DSGen::EType DumpspaceGenerator::GetMemberEType(const PropertyWrapper& Property)
@@ -96,7 +96,7 @@ std::string DumpspaceGenerator::GetMemberTypeStr(UEProperty Property, std::strin
 		if (UEEnum Enum = Member.Cast<UEByteProperty>().GetEnum())
 			return GetEnumPrefixedName(Enum);
 
-		return "uint8";
+		return "uint8_t";
 	}
 	else if (Flags & EClassCastFlags::UInt16Property)
 	{
@@ -112,7 +112,7 @@ std::string DumpspaceGenerator::GetMemberTypeStr(UEProperty Property, std::strin
 	}
 	else if (Flags & EClassCastFlags::Int8Property)
 	{
-		return "int8";
+		return "int8_t";
 	}
 	else if (Flags & EClassCastFlags::Int16Property)
 	{
@@ -161,7 +161,7 @@ std::string DumpspaceGenerator::GetMemberTypeStr(UEProperty Property, std::strin
 	}
 	else if (Flags & EClassCastFlags::BoolProperty)
 	{
-		return Member.Cast<UEBoolProperty>().IsNativeBool() ? "bool" : "uint8";
+		return Member.Cast<UEBoolProperty>().IsNativeBool() ? "bool" : "uint8_t";
 	}
 	else if (Flags & EClassCastFlags::StructProperty)
 	{
