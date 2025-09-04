@@ -22,6 +22,7 @@ enum class EFortToastType : uint8
 
 DWORD MainThread(HMODULE Module)
 {
+	Sleep(15000);
 	AllocConsole();
 	FILE* Dummy;
 	freopen_s(&Dummy, "CONOUT$", "w", stdout);

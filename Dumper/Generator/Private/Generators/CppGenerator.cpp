@@ -723,10 +723,10 @@ void CppGenerator::GenerateStruct(const StructWrapper& Struct, StreamType& Struc
 		const int32 StructSize = Struct.GetSize();
 
 		// Alignment assertions
-		StructFile << std::format("static_assert(alignof({}) == 0x{:06X}, \"Wrong alignment on {}\");\n", UniquePrefixedName, Struct.GetAlignment(), UniquePrefixedName);
+		StructFile << std::format("// static_assert(alignof({}) == 0x{:06X}, \"Wrong alignment on {}\");\n", UniquePrefixedName, Struct.GetAlignment(), UniquePrefixedName);
 
 		// Size assertions
-		StructFile << std::format("static_assert(sizeof({}) == 0x{:06X}, \"Wrong size on {}\");\n", UniquePrefixedName, (StructSize > 0x0 ? StructSize : 0x1), UniquePrefixedName);
+		StructFile << std::format("// static_assert(sizeof({}) == 0x{:06X}, \"Wrong size on {}\");\n", UniquePrefixedName, (StructSize > 0x0 ? StructSize : 0x1), UniquePrefixedName);
 	}
 
 
@@ -741,7 +741,7 @@ void CppGenerator::GenerateStruct(const StructWrapper& Struct, StreamType& Struc
 
 			std::string MemberName = Member.GetName();
 
-			StructFile << std::format("static_assert(offsetof({0}, {1}) == 0x{2:06X}, \"Member '{0}::{1}' has a wrong offset!\");\n", UniquePrefixedName, Member.GetName(), Member.GetOffset());
+			StructFile << std::format("// static_assert(offsetof({0}, {1}) == 0x{2:06X}, \"Member '{0}::{1}' has a wrong offset!\");\n", UniquePrefixedName, Member.GetName(), Member.GetOffset());
 		}
 	}
 }
@@ -765,7 +765,10 @@ void CppGenerator::GenerateEnum(const EnumWrapper& Enum, StreamType& StructFile)
 	if (!MemberString.empty()) [[likely]]
 		MemberString.pop_back();
 
-	StructFile << std::format(R"(
+#ifdef GAME_FARLIGHT84
+	if (Enum.GetFullName() == "Enum Solarland.ActionType" && GetEnumPrefixedName(Enum) == "Solarland::EActionType")
+	{
+        StructFile << std::format(R"(
 // {}
 // NumValues: 0x{:04X}
 enum class {} : {}
@@ -773,10 +776,49 @@ enum class {} : {}
 {}
 }};
 )", Enum.GetFullName()
-  , NumValues
-  , GetEnumPrefixedName(Enum)
-  , GetEnumUnderlayingType(Enum)
-  , MemberString);
+, NumValues
+, "Solarland::ActionType"
+, GetEnumUnderlayingType(Enum)
+, MemberString);
+	
+		return;
+	}
+	else if (Enum.GetFullName() == "Enum HotPatcherRuntime.EMatchRule")
+	{
+        StructFile << std::format(R"(
+// {}
+// NumValues: 0x{:04X}
+enum class {} : {}
+{{
+{}
+}};
+)", Enum.GetFullName()
+, NumValues
+, GetEnumPrefixedName(Enum)
+, GetEnumUnderlayingType(Enum)
+, R"(	kNone                                     = 0,
+	kMATCH                                    = 1,
+	kIGNORE                                   = 2,
+	kEMatchRule_MAX                           = 3,)");
+		return;
+	}
+	else
+	{}
+
+#endif
+
+    StructFile << std::format(R"(
+// {}
+// NumValues: 0x{:04X}
+enum class {} : {}
+{{
+{}
+}};
+)", Enum.GetFullName()
+, NumValues
+, GetEnumPrefixedName(Enum)
+, GetEnumUnderlayingType(Enum)
+, MemberString);
 }
 
 std::string CppGenerator::GetStructPrefixedName(const StructWrapper& Struct)
@@ -897,31 +939,31 @@ std::string CppGenerator::GetMemberTypeStringWithoutConst(UEProperty Member, int
 	}
 	else if (Flags & EClassCastFlags::UInt16Property)
 	{
-		return "uint16";
+		return "uint16_t";
 	}
 	else if (Flags & EClassCastFlags::UInt32Property)
 	{
-		return "uint32";
+		return "uint32_t";
 	}
 	else if (Flags & EClassCastFlags::UInt64Property)
 	{
-		return "uint64";
+		return "uint64_t";
 	}
 	else if (Flags & EClassCastFlags::Int8Property)
 	{
-		return "int8";
+		return "int8_t";
 	}
 	else if (Flags & EClassCastFlags::Int16Property)
 	{
-		return "int16";
+		return "int16_t";
 	}
 	else if (Flags & EClassCastFlags::IntProperty)
 	{
-		return "int32";
+		return "int32_t";
 	}
 	else if (Flags & EClassCastFlags::Int64Property)
 	{
-		return "int64";
+		return "int64_t";
 	}
 	else if (Flags & EClassCastFlags::FloatProperty)
 	{
@@ -1207,8 +1249,24 @@ void CppGenerator::GenerateNameCollisionsInl(StreamType& NameCollisionsFile)
 
 		auto& [ForwardDeclarations, Count] = PackagesAndForwardDeclarations[Enum.GetPackageIndex()];
 
-		ForwardDeclarations += std::format("\tenum class {} : {};\n", Enum.GetEnumPrefixedName(), GetEnumUnderlayingType(Enum));
+#ifdef GAME_FARLIGHT84
+		if (Enum.GetFullName() == "Enum Solarland.ActionType" && GetEnumPrefixedName(Enum) == "Solarland::EActionType")
+		{
+			ForwardDeclarations += std::format("\tenum class {} : {};\n", "ActionType", GetEnumUnderlayingType(Enum));
+		}
+		else
+		{
+			ForwardDeclarations += std::format("\tenum class {} : {};\n", Enum.GetEnumPrefixedName(), GetEnumUnderlayingType(Enum));
+		}
+
 		Count++;
+#else
+
+		ForwardDeclarations += std::format("\tenum class {} : {};\n", Enum.GetEnumPrefixedName(), GetEnumUnderlayingType(Enum));
+
+		Count++;
+
+#endif // GAME_FARLIGHT84
 	}
 
 	bool bHasSingleLineForwardDeclarations = false;
@@ -1265,12 +1323,12 @@ void CppGenerator::GenerateDebugAssertions(StreamType& AssertionStream)
 			AssertionStream << std::format("// {} {}\n", (Struct.IsClass() ? "class" : "struct"), UniquePrefixedName);
 
 			// Alignment assertions
-			AssertionStream << std::format("static_assert(alignof({}) == 0x{:06X});\n", UniquePrefixedName, Struct.GetAlignment());
+			AssertionStream << std::format("// static_assert(alignof({}) == 0x{:06X});\n", UniquePrefixedName, Struct.GetAlignment());
 
 			const int32 StructSize = Struct.GetSize();
 
 			// Size assertions
-			AssertionStream << std::format("static_assert(sizeof({}) == 0x{:06X});\n", UniquePrefixedName, (StructSize > 0x0 ? StructSize : 0x1));
+			AssertionStream << std::format("// static_assert(sizeof({}) == 0x{:06X});\n", UniquePrefixedName, (StructSize > 0x0 ? StructSize : 0x1));
 
 			AssertionStream << "\n";
 
@@ -1282,7 +1340,7 @@ void CppGenerator::GenerateDebugAssertions(StreamType& AssertionStream)
 				if (Member.IsStatic() || Member.IsZeroSizedMember() || Member.IsBitField())
 					continue;
 
-				AssertionStream << std::format("static_assert(offsetof({}, {}) == 0x{:06X});\n", UniquePrefixedName, Member.GetName(), Member.GetOffset());
+				AssertionStream << std::format("// static_assert(offsetof({}, {}) == 0x{:06X});\n", UniquePrefixedName, Member.GetName(), Member.GetOffset());
 			}
 
 			AssertionStream << "\n\n";
@@ -1348,8 +1406,11 @@ void CppGenerator::WriteFileHead(StreamType& File, PackageInfoHandle Package, EF
 )";
 
 	if (Type == EFileType::SdkHpp)
+	{
 		File << std::format("\n// {}\n// {}\n", Settings::Generator::GameName, Settings::Generator::GameVersion);
-	
+		File << std::format("static constexpr wchar_t const *GameName = L\"{}\";\n", Settings::Generator::GameName);
+		File << std::format("static constexpr wchar_t const *GameVersion = L\"{}\";\n", Settings::Generator::GameVersion);
+	}
 
 	File << std::format("\n// {}\n\n", Package.IsValidHandle() ? std::format("Package: {}", Package.GetName()) : CustomFileComment);
 
@@ -2953,10 +3014,10 @@ namespace InSDKUtils
 
 
 	/* Custom 'GetImageBase' function */
-	BasicHpp << R"(\t inline uintptr_t GetImageBase() 
+	BasicHpp << R"(inline uintptr_t GetImageBase() 
 	{ 
         return reinterpret_cast<uintptr_t>(GetModuleHandle(0)); 
-    }\n\n)";
+    })";
 
 	/* GetVirtualFunction(const void* ObjectInstance, int32 Index) function */
 	BasicHpp << R"(	template<typename FuncType>

@@ -263,14 +263,14 @@ public:
 		MemberNames.AddReservedName("public");
 		MemberNames.AddReservedName("const");
 
-		MemberNames.AddReservedName("int8");
-		MemberNames.AddReservedName("int16");
-		MemberNames.AddReservedName("int32");
-		MemberNames.AddReservedName("int64");
-		MemberNames.AddReservedName("uint8");
-		MemberNames.AddReservedName("uint16");
-		MemberNames.AddReservedName("uint32");
-		MemberNames.AddReservedName("uint64");
+		MemberNames.AddReservedName("int8_t");
+		MemberNames.AddReservedName("int16_t");
+		MemberNames.AddReservedName("int32_t");
+		MemberNames.AddReservedName("int64_t");
+		MemberNames.AddReservedName("uint8_t");
+		MemberNames.AddReservedName("uint16_t");
+		MemberNames.AddReservedName("uint32_t");
+		MemberNames.AddReservedName("uint64_t");
 
 		MemberNames.AddReservedName("TRUE");
 		MemberNames.AddReservedName("FALSE");

@@ -1137,7 +1137,7 @@ std::string UEByteProperty::GetCppType() const
 		return Enum.GetEnumTypeAsStr();
 	}
 
-	return "uint8";
+	return "uint8_t";
 }
 
 uint8 UEBoolProperty::GetFieldMask() const
@@ -1171,7 +1171,7 @@ bool UEBoolProperty::IsNativeBool() const
 
 std::string UEBoolProperty::GetCppType() const
 {
-	return IsNativeBool() ? "bool" : "uint8";
+	return IsNativeBool() ? "bool" : "uint8_t";
 }
 
 UEClass UEObjectProperty::GetPropertyClass() const
